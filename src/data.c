@@ -91,7 +91,7 @@ int		read_data(t_rnd *rnd)
 	char	*line;
 	t_data	*data;
 
-	system ("python3 py_scripts/get_tracks.py");
+	//system ("python3 py_scripts/get_tracks.py");
 	if ((fd = open("data.txt", O_RDONLY)) == -1)
 		return (0);
 	num = 0;

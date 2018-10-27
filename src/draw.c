@@ -65,8 +65,6 @@ void		connect_curve(t_rnd *rnd, t_point p1, t_point p2, int color1, int color2, 
 	t_point	midpoint;
 	t_point	curve;
 	double	degree;
-	double	thetamin;
-	double	thetamax;
 	double	d2r;
 	double	rad;
 	double	i;
@@ -80,12 +78,10 @@ void		connect_curve(t_rnd *rnd, t_point p1, t_point p2, int color1, int color2, 
 	midpoint.x = (cos(degree * d2r) * (rnd->opt->rad + abs(num1 - num2) * 100)) + WID / 2;
 	midpoint.y = (sin(degree * d2r) * (rnd->opt->rad + abs(num1 - num2) * 100)) + LEN / 2;
 	rad = sqrt(pow((midpoint.x - p1.x), 2) + pow((midpoint.y - p1.y), 2));
-	thetamin = (acos((p1.x - midpoint.x) / rad)) / d2r;
 	//printf("p1.x = %d, thetamin = %f, calculated p1.x = %f\n", p1.x, thetamin, cos(thetamin * d2r) * rad + midpoint.x);
-	thetamax = (acos((p2.x - midpoint.x) / rad)) / d2r;
 	//img_pixel_put(rnd->img, cos(thetamin * d2r) + midpoint.x, sin(thetamin) + midpoint.y, 0x00ff00);
 	//img_pixel_put(rnd->img, cos(thetamax  *d2r) + midpoint.x, curve.y + midpoint.y, 0x00ff00);
-	i = (thetamin < thetamax) ? thetamin : thetamin;
+	i = 0;
 	while (i < 360)
 	{
 		degree = (i * d2r) + rnd->opt->degree;
@@ -93,7 +89,7 @@ void		connect_curve(t_rnd *rnd, t_point p1, t_point p2, int color1, int color2, 
 		curve.y = sin(degree) * rad;
 		if (sqrt(pow(((WID / 2) - (curve.x + midpoint.x)), 2) + pow(((LEN / 2) - (curve.y + midpoint.y)), 2)) < rnd->opt->rad)
 			img_pixel_put(rnd->img, curve.x + midpoint.x, curve.y + midpoint.y, 0xffffff);
-		i += 1;
+		i += 0.1;
 	}
 }
 
@@ -159,14 +155,12 @@ void		draw_node(t_rnd *rnd, int x, int y, t_song *song)
 }
 
 //void		draw_node_map(t_rnd *rnd, int x, int y, double r)
-void		*draw_node_map(void *arg)
+void		draw_node_map(t_rnd *rnd)
 {
-	t_rnd	*rnd;
 	int	i;
 	double	degree;
 	double	d2r;
 
-	rnd = (t_rnd *)((t_thread *)arg)->rnd;
 	d2r = M_PI / 180;
 	i = 0;
 	rnd->opt->selected_node = -1;
@@ -177,7 +171,6 @@ void		*draw_node_map(void *arg)
 		draw_node(rnd, (cos(degree * d2r) * rnd->opt->rad) + MIDX, (sin(degree * d2r) * rnd->opt->rad) + MIDY, rnd->data->songs[i]);
 		i++;
 	}
-	return (NULL);
 }
 
 void		draw_stat(t_rnd *rnd, int x, int y, int len, double stat, int color)
@@ -198,20 +191,19 @@ void		draw_stat(t_rnd *rnd, int x, int y, int len, double stat, int color)
 	}
 }
 
-void			draw_connections(t_rnd *rnd)
+void			*draw_connections(void *arg)
 {
+	t_rnd	*rnd;
 	int		i;
 
-	rnd->img = init_img(rnd->mlx);
-	//draw_node_map(rnd, WID / 2, LEN / 2, rnd->opt->rad, rnd->data);
-	i = 0;
+	rnd = (t_rnd *)((t_thread *)arg)->rnd;
+	i = ((t_thread *)arg)->i;
 	if (rnd->opt->selected_node == -1)
 	{
-
 		while (i < rnd->data->num_connections)
 		{
 			draw_connection(rnd, rnd->data->connections[i], i);
-			i++;
+			i += 8;
 		}
 	}
 	else
@@ -221,10 +213,10 @@ void			draw_connections(t_rnd *rnd)
 			if (rnd->data->connections[i]->s1->num == rnd->opt->selected_node ||
 				rnd->data->connections[i]->s2->num == rnd->opt->selected_node)
 				draw_connection(rnd, rnd->data->connections[i], i);
-			i++;
+			i += 8;
 		}
 	}
-	
+	return (NULL);
 }
 
 void			draw_info(t_rnd *rnd)
@@ -247,20 +239,20 @@ void			render(t_rnd *rnd)
 
 	old = rnd->img;
 	rnd->img = init_img(rnd->mlx);
+	draw_node_map(rnd);
 	i = 0;
 	while (i < 8)
 	{
 		list[i].i = i;
 		list[i].rnd = rnd;
-		if (i == 0)
-			pthread_create(&(list[i]).thread_id, NULL, draw_node_map, &list[i]);
-		//else
-		//	pthread_create(&(list[i]).tid, NULL, draw_connections, &list[i]);
+		pthread_create(&(list[i]).thread_id, NULL, draw_connections, &list[i]);
 		i++;
 	}
+	i = 0;
+	while (i < 8)
+		pthread_join(list[i++].thread_id, NULL);
 	mlx_put_image_to_window(rnd->mlx, rnd->win, rnd->img->ptr, 0, 0);
-	//mlx_destroy_image(rnd->mlx, old->ptr);
-	free(old);
+	//free(old);
 	if (rnd->opt->selected_node > -1)
 		draw_info(rnd);
 	mlx_string_put(rnd->mlx, rnd->win, WID/2 - 10, LEN/2 - 10, 0xffffff, "ReND");

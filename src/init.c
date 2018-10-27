@@ -89,7 +89,7 @@ t_options	*init_options(double rad)
 
 	if (!(opt = (t_options *)malloc(sizeof(t_options))))
 		return (0);
-	opt->autorotate = 0;
+	opt->autorotate = 1;
 	opt->degree = 0;
 	opt->brightness = 100;
 	opt->rad = rad;
