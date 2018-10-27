@@ -1,0 +1,4 @@
+#!/bin/bash
+export SPOTIPY_CLIENT_ID='8ccaa817d73140a288462643b403d8b9'
+export SPOTIPY_CLIENT_SECRET='40cc7fd088b84b83a8f61b6e811bc9cd'
+export SPOTIPY_REDIRECT_URI='https://example.com/callback'

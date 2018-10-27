@@ -1,0 +1,59 @@
+#
+#
+#  14/10/2015
+#  ol@staff.42.fr
+#
+
+MinilibX
+
+Interface simplifiee de programmation graphique pour debutant
+#
+
+Cette minilibX est la version native pour MacOSX.
+[ Elle n'utilise plus les librairies graphiques X11, ni XQuartz le serveur X pour MacOSX. ]
+L'interface / l'API, reste identique a la version precedente. Les man presents dans la minilibX
+d'origine sont toujours valides.
+
+Le fichier mlx.h a inclure dans vos programmes rapelle les petites differences de comportement
+entre les 2 versions, dues a la gestion graphique differente selon les systemes d'exploitation.
+
+#
+
+Cette version utilise le systeme de fenetrage Cocoa de MacOSX ( AppKit ), et les primitives
+graphiques OpenGL moderne.
+
+#
+
+License: la MinilibX macos est fournie sous license BSD: Copyright Olivier Crouzet - 2014-2015
+         la MinilibX est fournie sous license BSD:  Copyright Olivier Crouzet - 1999-2015
+#
+#
+#
+#ENGLISH
+# 14/10/2015
+# ol@staff.42.fr
+#
+
+MinilibX
+
+Simplified graphic programming interface for beginners
+#
+
+This minilibX is the native version for MacOSX.
+[It no longer uses X11 graphics libraries, nor XQuartz the X server for MacOSX. ]
+The interface / API, remains identical to the previous version. The man presents in the minilibX
+of origin are still valid.
+
+The mlx.h file to include in your programs reminds small differences in behavior
+between the 2 versions, due to the different graphic management according to the operating systems.
+
+#
+
+This version uses MacOSX's Cocoa window system (AppKit), and primitives
+modern OpenGL graphics.
+
+#
+
+License: the MinilibX macos is provided under BSD license: Copyright Olivier Crouzet - 2014-2015
+         MinilibX is supplied under BSD license: Copyright Olivier Crouzet - 1999-2015
+#
