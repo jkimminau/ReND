@@ -83,7 +83,7 @@ t_img		*init_img(void *mlx)
 	return (img);
 }
 
-t_options	*init_options(double rad)
+t_options	*init_options(void)
 {
 	t_options *opt;
 
@@ -92,11 +92,17 @@ t_options	*init_options(double rad)
 	opt->autorotate = 1;
 	opt->degree = 0;
 	opt->brightness = 100;
-	opt->rad = rad;
+	opt->graph_rad = GRAPH_RAD;
+	opt->node_rad = NODE_RAD;
+	opt->mouse_x = 0;
+	opt->mouse_y = 0;
+	opt->highlighted_node = -1;
+	opt->selected_node = -1;
+	opt->threshold = CONNECTION_THRESHOLD;
 	return (opt);
 }
 
-t_rnd		*init_rnd(double rad)
+t_rnd		*init_rnd(int ac, char **av)
 {
 	t_rnd	*rnd;
 
@@ -104,13 +110,14 @@ t_rnd		*init_rnd(double rad)
 		return (0);
 	if (!(rnd->mlx = mlx_init()))
 		return (0);
-	if (!(rnd->win = mlx_new_window(rnd->mlx, WID, LEN, "FDF")))
+	if (!(rnd->win = mlx_new_window(rnd->mlx, WID, LEN, "ReND")))
 		return (0);
 	if (!(rnd->img = init_img(rnd->mlx)))
 		return (0);
-	if (!(rnd->opt = init_options(rad)))
+	if (!(rnd->opt = init_options()))
 		return (0);
 	if (!(read_data(rnd)))
 		return (0);
+	read_params(rnd, ac, av);
 	return (rnd);
 }

@@ -38,7 +38,7 @@ void	create_connections(t_rnd *rnd)
 	int		i;
 	int		j;
 	int		num_connects;
-	double	similarities;
+	int		similarities;
 
 	num_connects = 0;
 	i = 0;
@@ -46,7 +46,11 @@ void	create_connections(t_rnd *rnd)
 	{
 		j = i + 1;
 		while (j < rnd->data->num_songs)
-			num_connects += songcmp(rnd->data->songs[i], rnd->data->songs[j++]) > 3;
+		{
+			num_connects++;
+			j++;
+		}
+			//num_connects += songcmp(rnd->data->songs[i], rnd->data->songs[j++]) > CONNECTION_THRESHOLD;
 		i++;
 	}
 	//printf("found %d connections\n", num_connects);
@@ -59,8 +63,10 @@ void	create_connections(t_rnd *rnd)
 		j = i + 1;
 		while (j < rnd->data->num_songs)
 		{
-			if ((similarities = songcmp(rnd->data->songs[i], rnd->data->songs[j])) > 3)
-				rnd->data->connections[num_connects++] = init_connection(rnd->data->songs[i], rnd->data->songs[j], similarities / FEATURES * 100);
+			//OLD METHOD
+			//if ((similarities = songcmp(rnd->data->songs[i], rnd->data->songs[j])) > CONNECTION_THRESHOLD)
+			similarities = songcmp(rnd->data->songs[i], rnd->data->songs[j]);
+			rnd->data->connections[num_connects++] = init_connection(rnd->data->songs[i], rnd->data->songs[j], similarities);
 			j++;
 		}
 		i++;

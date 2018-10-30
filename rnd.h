@@ -1,14 +1,6 @@
 #ifndef RND_H
 # define RND_H
 
-# define WID 1000
-# define LEN 800
-# define MIDX WID / 2
-# define MIDY LEN / 2
-# define NODE_RAD 8.0
-# define GRAPH_RAD 350.0
-# define FEATURES 7
-
 # include <stdlib.h>
 # include <stdio.h>
 # include <math.h>
@@ -18,11 +10,22 @@
 # include "./libft/libft.h"
 # include "./libft/gnl/get_next_line.h"
 
+# define D2R M_PI / 180.0
+# define WID 1200
+# define LEN 800
+# define SIDEBAR_LEN 450
+# define MIDX (WID - SIDEBAR_LEN) / 2.0
+# define MIDY LEN / 2.0
+# define NODE_RAD 10.0
+# define GRAPH_RAD 350.0
+# define CONNECTION_THRESHOLD 3
+# define FEATURES 7
+
 typedef struct		s_point
 {
-	int				x;
-	int				y;
-	int				z;
+	double			x;
+	double			y;
+	double			z;
 }					t_point;
 
 typedef struct		s_img
@@ -36,11 +39,13 @@ typedef struct		s_img
 
 typedef struct		s_song
 {
+	double			x;
+	double			y;
 	char			*title;
 	char			*artist;
 	char			*album;
 	int				genre;
-	int				num;
+	double			num;
 	double			acousticness;
 	double			danceability;
 	double			energy;
@@ -54,7 +59,7 @@ typedef struct		s_connection
 {
 	t_song			*s1;
 	t_song			*s2;
-	double			strength;
+	int				strength;
 }					t_connection;
 
 typedef struct		s_data
@@ -68,14 +73,17 @@ typedef struct		s_data
 
 typedef struct 		s_options
 {
-	double			rad;
+	double			graph_rad;
+	double			node_rad;
 	int				autorotate;	//for autorotation
 	double			degree;		//for autorotation		stored separate so we 'pause' rotation when autorotate is 0
 	double 			brightness;	//for pulsing connections
 	int				auto_color;	//if 1, set colors based on color_select; else, genre string has set color
 	int				mouse_x;
 	int				mouse_y;
+	int				highlighted_node;
 	int				selected_node;
+	int				threshold;
 }					t_options;
 
 typedef struct		s_rnd
@@ -100,15 +108,17 @@ t_song				*init_song(void);
 t_connection		*init_connection(t_song *s1, t_song *s2, int strength);
 t_data				*init_data(int num_songs);
 t_img				*init_img(void *mlx);
-t_rnd				*init_rnd(double rad);
+t_rnd				*init_rnd(int ac, char **av);
 int					mouse_move(int x, int y, t_rnd *rnd);
+int             	mouse_click(int button, int x, int y, t_rnd *rnd);
 int					handle_exit(t_rnd *rnd);
 int					handle_keys(int key, t_rnd *rnd);
-int					read_params(int ac, char **av);
+void				read_params(t_rnd *rnd, int ac, char **av);
 int					read_data(t_rnd *rnd);
 void				img_pixel_put(t_img *img, int x, int y, int color);
 void				draw_node(t_rnd *rnd, int x, int y, t_song *song);
 void				draw_node_map(t_rnd *rnd);
+void				draw_sidebar(t_rnd *rnd);
 void				render(t_rnd *rnd);
 t_point				project_point(t_rnd *rnd, t_point p);
 int					color_select(int color, int num);

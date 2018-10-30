@@ -1,15 +1,18 @@
 #include <rnd.h>
 
-int	read_params(int ac, char **av)
+void	read_params(t_rnd *rnd, int ac, char **av)
 {
 	int		i;
-	int		rad = GRAPH_RAD;
 
 	i = 1;
 	while (i < ac)
 	{
 		if (ft_strcmp(av[i], "-r") == 0 || ft_strcmp(av[i], "--graphradius") == 0)
-			rad = ft_atoi(av[++i]);
+			rnd->opt->graph_rad = ft_atoi(av[++i]);
+		else if (ft_strcmp(av[i], "-n") == 0 || ft_strcmp(av[i], "--noderadius") == 0)
+			rnd->opt->node_rad = ft_atoi(av[++i]);
+		else if (ft_strcmp(av[i], "-t") == 0 || ft_strcmp(av[i], "--threshold") == 0)
+			rnd->opt->node_rad = ft_atoi(av[++i]);
 		else
 		{
 			if (av[i][0] == '-')
@@ -19,7 +22,6 @@ int	read_params(int ac, char **av)
 		}
 		i++;
 	}
-	return (rad);
 }
 
 char	*read_word(char **str)
@@ -64,9 +66,6 @@ t_song	*parse_line(char *line)
 	song->title = read_word(tmp);
 	song->artist = read_word(tmp);
 	song->album = read_word(tmp);
-	/*printf("title = '%s'\n", song->title);
-	printf("artist = '%s'\n", song->artist);
-	printf("album = '%s'\n", song->album);*/
 	song->acousticness = read_double(tmp);
 	song->danceability = read_double(tmp);
 	song->energy = read_double(tmp);
@@ -74,7 +73,10 @@ t_song	*parse_line(char *line)
 	song->speechiness = read_double(tmp);
 	song->tempo = read_double(tmp);
 	song->valence = read_double(tmp);
-	/*printf("acousticness = '%f'\n", song->acousticness);
+	/*printf("title = '%s'\n", song->title);
+	printf("artist = '%s'\n", song->artist);
+	printf("album = '%s'\n", song->album);
+	printf("acousticness = '%f'\n", song->acousticness);
 	printf("danceability = '%f'\n", song->danceability);
 	printf("energy = '%f'\n", song->energy);
 	printf("loudness = '%f'\n", song->loudness);
@@ -91,7 +93,7 @@ int		read_data(t_rnd *rnd)
 	char	*line;
 	t_data	*data;
 
-	//system ("python3 py_scripts/get_tracks.py");
+	system ("python3 py_scripts/get_tracks.py");
 	if ((fd = open("data.txt", O_RDONLY)) == -1)
 		return (0);
 	num = 0;

@@ -22,6 +22,15 @@ int		mouse_move(int x, int y, t_rnd *rnd)
 	return (0);
 }
 
+int		mouse_click(int button, int x, int y, t_rnd *rnd)
+{
+	(void)x;
+	(void)y;
+	if (button == 1)
+		rnd->opt->selected_node = rnd->opt->highlighted_node;
+	return (0);
+}
+
 int		handle_exit(t_rnd *rnd)
 {
 	//system( "read -n 1 -s -p \"Press any key to continue...\"" );
