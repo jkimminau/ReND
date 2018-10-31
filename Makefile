@@ -9,12 +9,12 @@ HEADER_DIR =	.	\
 OBJ_D = object_files/
 
 SRC_C =	rnd.c		\
-	draw.c		\
-	connect.c	\
-	data.c		\
-	event.c		\
-	init.c		\
-	view.c		\
+		draw.c		\
+		connect.c	\
+		data.c		\
+		event.c		\
+		init.c		\
+		view.c		\
 
 
 OBJ = $(SRC_C:.c=.o)
@@ -47,6 +47,7 @@ $(NAME): $(LIBFT) $(OBJ) $(MLX)
 
 clean:
 	/bin/rm -rf $(OBJ_D)
+	/bin/rm .cache-*
 
 fclean: clean
 	make fclean -C libft/

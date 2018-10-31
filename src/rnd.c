@@ -9,7 +9,9 @@ int		loop_events(t_rnd *rnd)
 	rnd->opt->brightness -= 0.5;
 	if (rnd->opt->brightness < -99)
 		rnd->opt->brightness = 99;
-	//printf("brightness = %f\n", rnd->opt->brightness);
+	rnd->opt->offset += 0.5;
+	if (rnd->opt->offset > rnd->data->num_songs)
+		rnd->opt->offset = 0;
 	mlx_destroy_image(rnd->mlx, rnd->img->ptr);
 	render(rnd);
 	return (0);

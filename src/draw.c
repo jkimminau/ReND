@@ -26,20 +26,34 @@ void                    draw_line(t_rnd *rnd, double x1, double y1, double x2, d
         }
 }
 
-
+//Less efficient, but avoids any gaps, at least for 500 radius circle 
 void			draw_circle(t_img *img, int x, int y, double rad, int color)
 {
-	int	i;
+	double	i;
 	double	degree;
-	double	d2r;
+	int		dx;
+    int		dy;		
+	int		prev_x;
+	int		prev_y;
 
-	d2r = M_PI / 180;
 	i = 0;
+	degree = i * D2R;
+	prev_x = cos(degree) * rad;
+	prev_y = sin(degree) * rad;
+	img_pixel_put(img, prev_x + x, prev_y + y, color);
+	i += 0.01;
 	while (i < 360)
 	{
-		degree = i * d2r;
-		img_pixel_put(img, (cos(degree) * rad) + x, (sin(degree) * rad) + y, color);
-		i++;
+		degree = i * D2R;
+		dx = cos(degree) * rad;
+		dy = sin(degree) * rad;
+		if (dx != prev_x || dy != prev_y)
+		{
+			img_pixel_put(img, dx + x, dy + y, color);
+			prev_x = x;
+			prev_y = y;
+		}
+		i += 0.01;
 	}
 }
 
@@ -67,12 +81,9 @@ void			connect_straight(t_rnd *rnd, t_connection *con)
 		color1 = brightness(con->s1->genre, ((double)con->strength - rnd->opt->threshold) / (FEATURES - rnd->opt->threshold) * 100);
 		color2 = brightness(con->s2->genre, ((double)con->strength - rnd->opt->threshold) / (FEATURES - rnd->opt->threshold) * 100);
 	}
-	//printf("c1: %x, 0: %x, 1: %x, 2: %x\n", color1, (color1 & 0xff), (color1 & 0xff00) >> 8, (color1 & 0xff0000) >> 16);
-	//printf("c2: %x, 0: %x, 1: %x, 2: %x\n", color2, (color2 & 0xff), (color2 & 0xff00) >> 8, (color2 & 0xff0000) >> 16);
 	dc[0] = (color2 & 0xff) - (color1 & 0xff);
 	dc[1] = ((color2 & 0xff00) >> 8) - ((color1 & 0xff00) >> 8);
 	dc[2] = ((color2 & 0xff0000) >> 16) - ((color1 & 0xff0000) >> 16);
-	//printf("0:%d 1:%d 2:%d\n", (int)dc[0], (int)dc[1], (int)dc[2]);
 	inc = (fabs(dx) > fabs(dy)) ? fabs(dx) : fabs(dy);
 	x = con->s1->x;
 	y = con->s1->y;
@@ -81,7 +92,6 @@ void			connect_straight(t_rnd *rnd, t_connection *con)
 	c[2] = (color1 & 0xff0000) >> 16;
 	while (fabs(x - con->s2->x) >= 1 || fabs(y - con->s2->y) >= 1)
 	{
-		//printf("c = %x\n", (int)(c[2] * 65536) & 0xff0000, (int)(c[1] * 256) & 0xff00, (int)c[0]);
 		if (sqrt(pow((con->s1->x - x), 2) + pow((con->s1->y - y), 2)) > NODE_RAD + 1 &&
 			sqrt(pow((con->s2->x - x), 2) + pow((con->s2->y - y), 2)) > NODE_RAD + 1)
 		img_pixel_put(rnd->img, (int)x, (int)y, ((int)(c[2] * 65536) & 0xff0000) + ((int)(c[1] * 256) & 0xff00) + c[0]);
@@ -93,38 +103,6 @@ void			connect_straight(t_rnd *rnd, t_connection *con)
 	}
 }
 
-/*void		connect_curve(t_rnd *rnd, t_connection *con)//, t_point p1, t_point p2, int color1, int color2, int num1, int num2)
-{
-	t_point	midpoint;
-	t_point	curve;
-	double	degree;
-	double	rad;
-	double	i;
-
-	degree = ((double)(con->s1->num + con->s2->num) / 2.0 * 360 / rnd->data->num_songs) + rnd->opt->degree;
-	//printf("degree = %f\n", degree);
-	midpoint.x = (cos(degree * D2R) * rnd->opt->graph_rad) + fabs((double)con->s1->num - con->s2->num) * 1)) + MIDX;
-	midpoint.y = (sin(degree * D2R) * rnd->opt->graph_rad) + fabs((double)con->s1->num - con->s2->num) * 1)) + MIDY;
-	rad = fabs(sqrt(pow((midpoint.x - con->s1->x), 2) + pow((midpoint.y - con->s1->y), 2)) + sqrt(pow((midpoint.x - con->s2->x), 2) + pow((midpoint.y - con->s2->y), 2))) / 2;
-	printf("s1->x: %f, s1->y: %f\n", con->s1->x, con->s1->y);
-	printf("s2->x: %f, s2->y: %f\n", con->s2->x, con->s2->y);
-	printf("\ts1->x: %f, s1->y: %f\n", con->s1->x, con->s1->y);
-	printf("\ts2->x: %f, s2->y: %f\n", con->s2->x, con->s2->y);
-	//printf("x = %f, x = %f\n", midpoint.x, midpoint.y);
-	img_pixel_put(rnd->img, midpoint.x,  midpoint.y, 0xffffff);
-	i = 0;
-	while (i < 360)
-	{
-		degree = (i * D2R);// + rnd->opt->degree;
-		curve.x = cos(degree) * rad;
-		curve.y = sin(degree) * rad;
-		//if (sqrt(pow(((MIDX) - (curve.x + midpoint.x)), 2) + pow(((MIDY) - (curve.y + midpoint.y)), 2)) < rnd->opt->graph_rad &&
-		//	sqrt(pow(((MIDX) - (curve.x + midpoint.x)), 2) + pow(((MIDY) - (curve.y + midpoint.y)), 2)) < rnd->opt->node_rad)
-			img_pixel_put(rnd->img, round(curve.x + midpoint.x), round(curve.y + midpoint.y), 0xffffff);
-		i += 0.1;
-	}
-}*/
-
 void		connect_curve(t_rnd *rnd, t_connection *con)
 {
 	t_point	midpoint;
@@ -133,29 +111,25 @@ void		connect_curve(t_rnd *rnd, t_connection *con)
 	double	rad;
 	double	i;
 	int		color;
+	//double	thetamin;
+	//double	thetamax;
 
 	if (((con->s1->num == rnd->opt->selected_node) || (con->s1->num == rnd->opt->highlighted_node)) && ((con->s2->num == rnd->opt->selected_node) || (con->s2->num == rnd->opt->highlighted_node)))
 		color = 0xffffff;
 	else
 		color = brightness(0xffffff, ((double)con->strength - rnd->opt->threshold) / (FEATURES - rnd->opt->threshold) * 100);
-	//TRUE MIDPOINT
-	//midpoint.x = (con->s1->x + con->s2->x) / 2;
-	//midpoint.y = (con->s1->y + con->s2->y) / 2;
-	//RADIAL MIDPOINT
 	degree = ((((con->s1->num + con->s2->num) / 2) * 360) / rnd->data->num_songs) + rnd->opt->degree;
-	//printf("num1: %f, num2: %f, degree: %f\n", (con->s1->num * 360 / rnd->data->num_songs) + rnd->opt->degree,  (con->s2->num * 360 / rnd->data->num_songs) + rnd->opt->degree, degree);
-	/*printf("halved = %f\n", (con->s1->num + con->s2->num) / 2);
-	printf("into degrees = %f\n", (con->s1->num + con->s2->num) * 360 / rnd->data->num_songs / 2);
-	printf("degree vs calc: %f, %f\n", degree, ((con->s1->num + con->s2->num) * 360 / rnd->data->num_songs / 2) + rnd->opt->degree);*/
-	midpoint.x = (rnd->opt->graph_rad * cos(degree * D2R)) + /*fabs((double)con->s1->num - con->s2->num)*/ + MIDX;
+	midpoint.x = (rnd->opt->graph_rad * cos(degree * D2R)) /*+ fabs((double)con->s1->num - con->s2->num)*/ + MIDX;
 	midpoint.y = (rnd->opt->graph_rad * sin(degree * D2R)) /*+ fabs((double)con->s1->num - con->s2->num)*/ + MIDY;
-	//rad = sqrt(pow(con->s1->x - con->s2->x, 2) + pow(con->s1->y - con->s2->y, 2)) / 2;
-	rad = fabs(sqrt(pow((midpoint.x - con->s1->x), 2) + pow((midpoint.y - con->s1->y), 2)) + sqrt(pow((midpoint.x - con->s2->x), 2) + pow((midpoint.y - con->s2->y), 2))) / 2;
-	//printf("dist from s1: %f\n", sqrt(pow((midpoint.x - con->s1->x), 2) + pow((midpoint.y - con->s1->y), 2)));
-	//printf("dist from s2: %f\n", sqrt(pow((midpoint.x - con->s2->x), 2) + pow((midpoint.y - con->s2->y), 2)));
+	rad = sqrt(pow((midpoint.x - con->s1->x), 2) + pow((midpoint.y - con->s1->y), 2));
 	//img_pixel_put(rnd->img, midpoint.x,  midpoint.y, 0xffffff);
+	//thetamin = acos(con->s1->x / rad) / D2R;
+	//thetamax = acos(con->s2->x / rad) / D2R;
+	//printf("min: %f, max: %f\n", thetamin, thetamax);
 	i = 0;
+	//i = thetamin;
 	while (i < 360)
+	//while (i < thetamax)
 	{
 		degree = (i * D2R);// + rnd->opt->degree;
 		curve.x = cos(degree) * rad;
@@ -170,21 +144,10 @@ void		connect_curve(t_rnd *rnd, t_connection *con)
 
 void		draw_connection(t_rnd *rnd, t_connection *con, int offset)
 {
-	/*t_point		p1;
-	t_point		p2;
-	double		degree;
-	double		d2r;*/
 
 	(void)offset;
-	/*d2r = M_PI / 180;
-	degree =((double)con->s1->num * 360 / rnd->data->num_songs) + rnd->opt->degree;
-	p1.x = (cos(degree  * d2r) * rnd->opt->graph_rad) + MIDX;
-	p1.y = (sin(degree * d2r) * rnd->opt->graph_rad) + MIDY;
-	degree =((double)con->s2->num * 360 / rnd->data->num_songs) + rnd->opt->degree;
-	p2.x = (cos(degree * d2r) * rnd->opt->graph_rad) + MIDX;
-	p2.y = (sin(degree * d2r) * rnd->opt->graph_rad) + MIDY;*/
 	//connect_straight(rnd, con);
-	connect_curve(rnd, con);//, p1, p2, brightness(con->s1->genre, fabs(rnd->opt->brightness + offset)), brightness(con->s2->genre, fabs(rnd->opt->brightness + offset)), con->s1->num, con->s2->num);
+	connect_curve(rnd, con);
 }
 
 void		draw_node(t_rnd *rnd, int x, int y, t_song *song)
@@ -352,18 +315,16 @@ void			check_mouse(t_rnd *rnd)
 {
 	int		i;
 	double	degree;
-	double	d2r;
 	double	x;
 	double	y;
 
-	d2r = M_PI / 180;
 	rnd->opt->highlighted_node = -1;
 	i = 0;
 	while (i < rnd->data->num_songs)
 	{
 		degree = (i * 360 / rnd->data->num_songs) + rnd->opt->degree;
-		x = (cos(degree * d2r) * rnd->opt->graph_rad) + MIDX;
-		y = (sin(degree * d2r) * rnd->opt->graph_rad) + MIDY;
+		x = (cos(degree * D2R) * rnd->opt->graph_rad) + MIDX;
+		y = (sin(degree * D2R) * rnd->opt->graph_rad) + MIDY;
 		if (sqrt(pow((x - rnd->opt->mouse_x), 2) + pow((y - rnd->opt->mouse_y), 2)) < rnd->opt->node_rad + 1)
 			rnd->opt->highlighted_node = i;
 		i++;

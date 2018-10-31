@@ -13,11 +13,11 @@
 # define D2R M_PI / 180.0
 # define WID 1200
 # define LEN 800
-# define SIDEBAR_LEN 450
+# define SIDEBAR_LEN WID / 4
 # define MIDX (WID - SIDEBAR_LEN) / 2.0
 # define MIDY LEN / 2.0
 # define NODE_RAD 10.0
-# define GRAPH_RAD 350.0
+# define GRAPH_RAD (WID / 2 < LEN / 2.2) ? WID / 2 : LEN / 2.2;
 # define CONNECTION_THRESHOLD 3
 # define FEATURES 7
 
@@ -77,6 +77,7 @@ typedef struct 		s_options
 	double			node_rad;
 	int				autorotate;	//for autorotation
 	double			degree;		//for autorotation		stored separate so we 'pause' rotation when autorotate is 0
+	double			offset;
 	double 			brightness;	//for pulsing connections
 	int				auto_color;	//if 1, set colors based on color_select; else, genre string has set color
 	int				mouse_x;
