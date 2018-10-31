@@ -111,8 +111,8 @@ void		connect_curve(t_rnd *rnd, t_connection *con)
 	double	rad;
 	double	i;
 	int		color;
-	//double	thetamin;
-	//double	thetamax;
+	double	theta1;
+	double	theta2;
 
 	if (((con->s1->num == rnd->opt->selected_node) || (con->s1->num == rnd->opt->highlighted_node)) && ((con->s2->num == rnd->opt->selected_node) || (con->s2->num == rnd->opt->highlighted_node)))
 		color = 0xffffff;
@@ -123,9 +123,14 @@ void		connect_curve(t_rnd *rnd, t_connection *con)
 	midpoint.y = (rnd->opt->graph_rad * sin(degree * D2R)) /*+ fabs((double)con->s1->num - con->s2->num)*/ + MIDY;
 	rad = sqrt(pow((midpoint.x - con->s1->x), 2) + pow((midpoint.y - con->s1->y), 2));
 	//img_pixel_put(rnd->img, midpoint.x,  midpoint.y, 0xffffff);
-	//thetamin = acos(con->s1->x / rad) / D2R;
-	//thetamax = acos(con->s2->x / rad) / D2R;
-	//printf("min: %f, max: %f\n", thetamin, thetamax);
+	theta1 = acos(con->s1->x / rad) / D2R; /// D2R;
+	if (theta1 != theta1)
+	{
+		//printf("? %f\n", con->s1->x / rad);
+		theta1 = asin(con->s1->y / rad) / D2R;
+	}
+	theta2 = acos(con->s2->x / rad) / D2R; /// D2R;
+	//printf("theta1: %f, theta2: %f\n", theta1, theta2);
 	i = 0;
 	//i = thetamin;
 	while (i < 360)
@@ -137,8 +142,63 @@ void		connect_curve(t_rnd *rnd, t_connection *con)
 		if (sqrt(pow(((MIDX) - (curve.x + midpoint.x)), 2) + pow(((MIDY) - (curve.y + midpoint.y)), 2)) < rnd->opt->graph_rad &&
 			sqrt(pow((con->s1->x - (curve.x + midpoint.x)), 2) + pow((con->s1->y - (curve.y + midpoint.y)), 2)) > rnd->opt->node_rad &&
 			sqrt(pow((con->s2->x - (curve.x + midpoint.x)), 2) + pow((con->s2->y - (curve.y + midpoint.y)), 2)) > rnd->opt->node_rad)
-			img_pixel_put(rnd->img, round(curve.x + midpoint.x), round(curve.y + midpoint.y), color);
+			img_pixel_put(rnd->img, curve.x + midpoint.x, curve.y + midpoint.y, color);
 		i += 0.1;
+	}
+}
+
+void		connect_bezier(t_rnd *rnd, t_connection *con)
+{
+	int 	color1;
+	int 	color2;
+	double	c[3];
+	double	dc[3];
+	double	num;
+	double	degree;
+	t_point	anchor;
+	t_point	curve;
+	double	t;
+
+	if (((con->s1->num == rnd->opt->selected_node) || (con->s1->num == rnd->opt->highlighted_node)) && ((con->s2->num == rnd->opt->selected_node) || (con->s2->num == rnd->opt->highlighted_node)))
+	{
+		color1 = con->s1->genre;
+		color2 = con->s2->genre;
+	}
+	else
+	{
+		color1 = brightness(con->s1->genre, ((double)con->strength - rnd->opt->threshold) / (FEATURES - rnd->opt->threshold) * 100);
+		color2 = brightness(con->s2->genre, ((double)con->strength - rnd->opt->threshold) / (FEATURES - rnd->opt->threshold) * 100);
+	}
+	dc[0] = (color2 & 0xff) - (color1 & 0xff);
+	dc[1] = ((color2 & 0xff00) >> 8) - ((color1 & 0xff00) >> 8);
+	dc[2] = ((color2 & 0xff0000) >> 16) - ((color1 & 0xff0000) >> 16);
+	c[0] = color1 & 0xff;
+	c[1] = (color1 & 0xff00) >> 8;
+	c[2] = (color1 & 0xff0000) >> 16;
+	if (con->s2->num - con->s1->num < con->s1->num + rnd->data->num_songs - con->s2->num)
+		num = con->s1->num + (con->s2->num - con->s1->num) / 2;
+	else
+		num = con->s2->num + (con->s1->num + rnd->data->num_songs - con->s2->num) / 2;
+	num = num + rnd->data->num_songs / 2;
+	if (num >= rnd->data->num_songs)
+		num -= rnd->data->num_songs;
+	degree = ((num * 360) / rnd->data->num_songs) + rnd->opt->degree;
+	anchor.x = (rnd->opt->graph_rad * cos(degree * D2R)) + MIDX;
+	anchor.y = (rnd->opt->graph_rad * sin(degree * D2R)) + MIDY;
+	t = 0;
+	while (t < 1)
+	{
+		curve.x = (1 - t) * (1 - t) * con->s1->x + 2 * (1 - t) * t * anchor.x + t * t * con->s2->x;
+		curve.y = (1 - t) * (1 - t) * con->s1->y + 2 * (1 - t) * t * anchor.y + t * t * con->s2->y;
+		if (sqrt(pow(con->s1->x - curve.x, 2) + pow(con->s1->y - curve.y, 2)) > rnd->opt->node_rad + 0.5 &&
+			sqrt(pow(con->s2->x - curve.x, 2) + pow(con->s2->y - curve.y, 2)) > rnd->opt->node_rad + 0.5)
+		//img_pixel_put(rnd->img, curve.x, curve.y, ((int)(c[2] * 65536) & 0xff0000) + ((int)(c[1] * 256) & 0xff00) + c[0]);
+		img_pixel_put(rnd->img, curve.x, curve.y, (((int)c[2]) << 16) + (((int)c[1]) << 8) + c[0]);
+		//img_pixel_put(rnd->img, curve.x, curve.y, color1);
+		c[0] += (dc[0] * 0.001);
+		c[1] += (dc[1] * 0.001);
+		c[2] += (dc[2] * 0.001);
+		t += 0.001;
 	}
 }
 
@@ -146,8 +206,11 @@ void		draw_connection(t_rnd *rnd, t_connection *con, int offset)
 {
 
 	(void)offset;
-	//connect_straight(rnd, con);
-	connect_curve(rnd, con);
+	if (con->s2->num - con->s1->num == rnd->data->num_songs / 2)
+		connect_straight(rnd, con);
+	else
+	//connect_curve(rnd, con);
+		connect_bezier(rnd, con);
 }
 
 void		draw_node(t_rnd *rnd, int x, int y, t_song *song)

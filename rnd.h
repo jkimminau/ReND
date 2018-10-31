@@ -10,7 +10,7 @@
 # include "./libft/libft.h"
 # include "./libft/gnl/get_next_line.h"
 
-# define D2R M_PI / 180.0
+# define D2R (M_PI / 180.0)
 # define WID 1200
 # define LEN 800
 # define SIDEBAR_LEN WID / 4

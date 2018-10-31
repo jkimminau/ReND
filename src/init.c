@@ -99,6 +99,7 @@ t_options	*init_options(void)
 	opt->highlighted_node = -1;
 	opt->selected_node = -1;
 	opt->threshold = CONNECTION_THRESHOLD;
+	opt->offset = 0;
 	return (opt);
 }
 
