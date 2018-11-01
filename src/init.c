@@ -8,9 +8,12 @@ void		free_all(t_rnd *rnd)
 	while (rnd->data->num_songs)
 	{
 		rnd->data->num_songs--;
-		free(rnd->data->songs[rnd->data->num_songs]->title);
-		free(rnd->data->songs[rnd->data->num_songs]->album);
-		free(rnd->data->songs[rnd->data->num_songs]->artist);
+		if (rnd->data->songs[rnd->data->num_songs]->title)
+			free(rnd->data->songs[rnd->data->num_songs]->title);
+		if (rnd->data->songs[rnd->data->num_songs]->album)
+			free(rnd->data->songs[rnd->data->num_songs]->album);
+		if (rnd->data->songs[rnd->data->num_songs]->artist)
+			free(rnd->data->songs[rnd->data->num_songs]->artist);
 		free(rnd->data->songs[rnd->data->num_songs]);
 	}
 	free(rnd->data->songs);
@@ -42,7 +45,19 @@ t_song		*init_song(void)
 
 	if (!(song = (t_song *)malloc(sizeof(t_song))))
 		return (NULL);
+	song->title = 0;
+	song->album = 0;
+	song->artist = 0;
 	return (song);
+}
+
+t_user			*init_user(void)
+{
+	t_user	*user;
+
+	if (!(user = (t_user *)malloc(sizeof(t_user))))
+		return (NULL);
+	return (user);
 }
 
 t_connection	*init_connection(t_song *s1, t_song *s2, int strength)
@@ -64,6 +79,7 @@ t_data		*init_data(int num_songs)
 	if (!(data = (t_data *)malloc(sizeof(t_data))))
 		return (NULL);
 	data->num_songs = num_songs;
+	data->num_connections = 0;
 	if (!(data->songs = (t_song **)malloc(sizeof(t_song *) * num_songs)))
 		return (NULL);
 	return (data);
@@ -96,11 +112,25 @@ t_options	*init_options(void)
 	opt->node_rad = NODE_RAD;
 	opt->mouse_x = 0;
 	opt->mouse_y = 0;
+	opt->mouse_degree = 0;
 	opt->highlighted_node = -1;
 	opt->selected_node = -1;
 	opt->threshold = CONNECTION_THRESHOLD;
 	opt->offset = 0;
 	return (opt);
+}
+
+t_menu		*init_menu(void)
+{
+	t_menu	 *menu;
+
+	if (!(menu = (t_menu *)malloc(sizeof(t_menu))))
+		return (0);
+	menu->active = 1;
+	menu->start_pressed = 0;
+	menu->recently_played = 1;
+	menu->discover_weekly = 0;
+	return (menu);
 }
 
 t_rnd		*init_rnd(int ac, char **av)
@@ -117,7 +147,11 @@ t_rnd		*init_rnd(int ac, char **av)
 		return (0);
 	if (!(rnd->opt = init_options()))
 		return (0);
-	if (!(read_data(rnd)))
+	if (!(rnd->user = init_user()))
+		return (0);
+	if (!(rnd->menu = init_menu()))
+		return (0);
+	if (!(rnd->data = init_menu_data()))
 		return (0);
 	read_params(rnd, ac, av);
 	return (rnd);

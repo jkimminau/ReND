@@ -55,6 +55,21 @@ double	read_double(char **str)
 	return (res);
 }
 
+void	print_song(t_song *song)
+{
+	printf("title = '%s'\n", song->title);
+	printf("artist = '%s'\n", song->artist);
+	printf("album = '%s'\n", song->album);
+	printf("acousticness = '%f'\n", song->acousticness);
+	printf("danceability = '%f'\n", song->danceability);
+	printf("energy = '%f'\n", song->energy);
+	printf("instrumentalness = '%f'\n", song->instrumentalness);
+	printf("loudness = '%f'\n", song->loudness);
+	printf("speechiness = '%f'\n", song->speechiness);
+	printf("tempo = '%f'\n", song->tempo);
+	printf("valence = '%f'\n\n", song->valence);
+}
+
 t_song	*parse_line(char *line)
 {
 	t_song *song;
@@ -62,27 +77,17 @@ t_song	*parse_line(char *line)
 
 	tmp = &line;
 	song = init_song();
-
 	song->title = read_word(tmp);
 	song->artist = read_word(tmp);
 	song->album = read_word(tmp);
 	song->acousticness = read_double(tmp);
 	song->danceability = read_double(tmp);
 	song->energy = read_double(tmp);
+	song->instrumentalness = read_double(tmp);
 	song->loudness = read_double(tmp);
 	song->speechiness = read_double(tmp);
 	song->tempo = read_double(tmp);
 	song->valence = read_double(tmp);
-	/*printf("title = '%s'\n", song->title);
-	printf("artist = '%s'\n", song->artist);
-	printf("album = '%s'\n", song->album);
-	printf("acousticness = '%f'\n", song->acousticness);
-	printf("danceability = '%f'\n", song->danceability);
-	printf("energy = '%f'\n", song->energy);
-	printf("loudness = '%f'\n", song->loudness);
-	printf("speechiness = '%f'\n", song->speechiness);
-	printf("tempo = '%f'\n", song->tempo);
-	printf("valence = '%f'\n\n", song->valence);*/
 	return (song);
 }
 
@@ -119,4 +124,22 @@ int		read_data(t_rnd *rnd)
 	close(fd);
 	rnd->data = data;
 	return (1);
+}
+
+t_data	*init_menu_data(void)
+{
+	int		i;
+	t_data	*menu;
+
+	i = 0;
+	menu = init_data(30);
+	while (i < 30)
+	{
+		menu->songs[i] = init_song();
+		menu->songs[i]->num = i;
+		menu->songs[i]->genre = color_select(i * 1536 / menu->num_songs, 0);
+		i++;
+	}
+	menu->connections = 0;
+	return (menu);
 }

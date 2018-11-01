@@ -36,6 +36,7 @@ for feature in features_list:
 			track['acousticness'] = feature['acousticness']
 			track['danceability'] = feature['danceability']
 			track['energy'] = feature['energy']
+			track['instrumentalness'] = feature['instrumentalness']
 			track['loudness'] = feature['loudness']
 			track['speechiness'] = feature['speechiness']
 			track['tempo'] = feature['tempo']
@@ -49,6 +50,7 @@ for track in tracks:
 	file.write("\"" + str(track['acousticness']) + "\" ")
 	file.write("\"" + str(track['danceability']) + "\" ")
 	file.write("\"" + str(track['energy']) + "\" ")
+	file.write("\"" + str(track['instrumentalness']) + "\" ")
 	file.write("\"" + str(track['loudness']) + "\" ")
 	file.write("\"" + str(track['speechiness']) + "\" ")
 	file.write("\"" + str(track['tempo']) + "\" ")

@@ -26,6 +26,7 @@ int		songcmp(t_song *s1, t_song *s2)
 	similarities += are_similar(s1->acousticness, s2->acousticness, 0.2, 1.0);
 	similarities += are_similar(s1->danceability, s2->danceability, 0.2, 1.0);
 	similarities += are_similar(s1->energy, s2->energy, 0.2, 1.0);
+	similarities += are_similar(s1->instrumentalness, s2->instrumentalness, 0.2, 1.0);
 	similarities += are_similar(s1->loudness, s2->loudness, 0.2, 1.0);
 	similarities += are_similar(s1->speechiness, s2->speechiness, 0.2, 1.0);
 	similarities += are_similar(s1->tempo, s2->tempo, 80, 200);

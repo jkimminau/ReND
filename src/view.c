@@ -36,3 +36,17 @@ int			brightness(int color, int brightness)
 	b = b * brightness / 100;
 	return ((r << 16) + (g << 8) + b);
 }
+
+double		get_angle_for_node(t_rnd *rnd, double node)
+{
+	return (node / rnd->data->num_songs * 360);
+}
+
+double		get_mouse_degree(t_rnd *rnd, int x, int y)
+{
+	int deg;
+
+	(void)rnd;
+	deg = (int)((atan2(y - MIDY,x - MIDX) / D2R + 360)) % 360;
+	return (deg);
+}
