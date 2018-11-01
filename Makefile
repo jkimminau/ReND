@@ -47,7 +47,6 @@ $(NAME): $(LIBFT) $(OBJ) $(MLX)
 
 clean:
 	/bin/rm -rf $(OBJ_D)
-	/bin/rm .cache-*
 
 fclean: clean
 	make fclean -C libft/
