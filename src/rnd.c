@@ -23,7 +23,6 @@ int		main(int ac, char **av)
 
 	if (!(rnd = init_rnd(ac, av)))
 		return (printf("error initializing rnd\n"));
-	//create_connections(rnd);
 	mlx_hook(rnd->win, 2, 0, handle_keys, rnd);
 	mlx_hook(rnd->win, 6, 1L << 6, mouse_move, rnd);
 	mlx_mouse_hook(rnd->win, mouse_click, rnd);

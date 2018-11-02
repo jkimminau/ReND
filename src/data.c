@@ -98,7 +98,7 @@ int		read_data(t_rnd *rnd)
 	char	*line;
 	t_data	*data;
 
-	//system ("python3 py_scripts/get_tracks.py");
+	system ("python3 py_scripts/get_tracks.py");
 	if ((fd = open("data.txt", O_RDONLY)) == -1)
 		return (0);
 	num = 0;
@@ -142,4 +142,31 @@ t_data	*init_menu_data(void)
 	}
 	menu->connections = 0;
 	return (menu);
+}
+
+void	generate_user_stats(t_rnd *rnd)
+{
+	int		i;
+
+	i = 0;
+	while (i < rnd->data->num_songs)
+	{
+		rnd->user->acousticness += rnd->data->songs[i]->acousticness;
+		rnd->user->danceability += rnd->data->songs[i]->danceability;
+		rnd->user->energy += rnd->data->songs[i]->energy;
+		rnd->user->instrumentalness += rnd->data->songs[i]->instrumentalness;
+		rnd->user->loudness += rnd->data->songs[i]->loudness;
+		rnd->user->speechiness += rnd->data->songs[i]->speechiness;
+		rnd->user->tempo += rnd->data->songs[i]->tempo;
+		rnd->user->valence += rnd->data->songs[i]->valence;
+		i++;
+	}
+	rnd->user->acousticness /= rnd->data->num_songs;
+	rnd->user->danceability /= rnd->data->num_songs;
+	rnd->user->energy /= rnd->data->num_songs;
+	rnd->user->instrumentalness /= rnd->data->num_songs;
+	rnd->user->loudness /= rnd->data->num_songs;
+	rnd->user->speechiness /= rnd->data->num_songs;
+	rnd->user->tempo /= rnd->data->num_songs;
+	rnd->user->valence /= rnd->data->num_songs;
 }

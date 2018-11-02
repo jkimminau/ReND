@@ -32,10 +32,10 @@ MLXLNK =	-L minilibx/ -l mlx -framework OpenGL -framework AppKit
 all : $(NAME)
 
 $(LIBFT):
-	make -C libft/
+	@make -C libft/
 
 $(MLX):
-	make -C minilibx/
+	@make -C minilibx/
 
 $(OBJ): $(SRC)
 	gcc $(CFLAGS) -c $(SRC) -I .

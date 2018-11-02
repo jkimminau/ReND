@@ -18,6 +18,7 @@
 # define MIDY (LEN / 2.0)
 # define NODE_RAD 10.0
 # define GRAPH_RAD ((MIDX < MIDY) ? MIDX : MIDY) * (0.95);
+# define STAT_WID (SIDEBAR_LEN * 8 / 10)
 # define CONNECTION_THRESHOLD 3
 # define FEATURES 7
 
@@ -99,6 +100,7 @@ typedef struct 		s_options
 	int				highlighted_node;
 	int				selected_node;
 	int				threshold;
+	double			stat_scale;
 }					t_options;
 
 typedef struct		s_menu
@@ -130,6 +132,7 @@ typedef struct 		s_thread
 void				free_all(t_rnd *rnd);
 t_point				new_point(int x, int y, int z);
 t_song				*init_song(void);
+t_user				*init_user(void);
 t_connection		*init_connection(t_song *s1, t_song *s2, int strength);
 t_data				*init_data(int num_songs);
 t_menu				*init_menu(void);
@@ -144,6 +147,8 @@ int					handle_keys(int key, t_rnd *rnd);
 void				read_params(t_rnd *rnd, int ac, char **av);
 int					read_data(t_rnd *rnd);
 t_data				*init_menu_data(void);
+void				generate_user_stats(t_rnd *rnd);
+void				print_song(t_song *song);
 
 void				img_pixel_put(t_img *img, int x, int y, int color);
 void				draw_node(t_rnd *rnd, int x, int y, t_song *song);
@@ -157,7 +162,6 @@ int					brightness(int color, int brightness);
 double				get_angle_for_node(t_rnd *rnd, double node);
 double				get_mouse_degree(t_rnd *rnd, int x, int y);
 
-int					are_similar(double stat1, double stat2, double min, double max);
 void				create_connections(t_rnd *rnd);
 
 #endif

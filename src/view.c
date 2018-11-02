@@ -27,7 +27,6 @@ int			brightness(int color, int brightness)
 
 	if (brightness > 100)
 		brightness = 100 - brightness % 100;
-	//printf("\tbrightness = %d\n",brightness);
 	r = (color & 0xff0000) >> 16;
 	g = (color & 0xff00) >> 8;
 	b = color & 0xff;
@@ -47,6 +46,8 @@ double		get_mouse_degree(t_rnd *rnd, int x, int y)
 	int deg;
 
 	(void)rnd;
-	deg = (int)((atan2(y - MIDY,x - MIDX) / D2R + 360)) % 360;
+	deg = (atan2(y - MIDY,x - MIDX) / D2R + 360);
+	while (deg > 359)
+		deg -= 360;
 	return (deg);
 }

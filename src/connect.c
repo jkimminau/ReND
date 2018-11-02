@@ -1,20 +1,11 @@
 #include <rnd.h>
 
-int		are_similar(double stat1, double stat2, double min, double max)
+int		are_similar(double stat1, double stat2, double threshold)
 {
-	double	d;
-
-	d = (max - min) / 4;
-	if (stat1 < min || stat2 < min)
-		return (stat1 < min && stat2 < min ? 1 : 0);
-	if (stat1 < min + d * 1 || stat2 < min + d * 1)
-		return (stat1 < min + d * 1 && stat2 < min + d * 1);
-	if (stat1 < min + d * 2 || stat2 < min + d * 2)
-		return (stat1 < min + d * 2 && stat2 < min + d * 2);
-	if (stat1 < min + d * 3 || stat2 < min + d * 3)
-		return (stat1 < min + d * 3 && stat2 < min + d * 3);
-	if (stat1 >= min + d * 3 || stat2 >= min + d * 3)
-		return (stat1 >= min + d * 3 && stat2 >= min + d * 3);
+	if (fabs(stat2 - stat1) > threshold)
+		return (0);
+	else
+		return (1);
 	return (0);
 }
 
@@ -23,14 +14,14 @@ int		songcmp(t_song *s1, t_song *s2)
 	int		similarities;
 
 	similarities = 0;
-	similarities += are_similar(s1->acousticness, s2->acousticness, 0.2, 1.0);
-	similarities += are_similar(s1->danceability, s2->danceability, 0.2, 1.0);
-	similarities += are_similar(s1->energy, s2->energy, 0.2, 1.0);
-	similarities += are_similar(s1->instrumentalness, s2->instrumentalness, 0.2, 1.0);
-	similarities += are_similar(s1->loudness, s2->loudness, 0.2, 1.0);
-	similarities += are_similar(s1->speechiness, s2->speechiness, 0.2, 1.0);
-	similarities += are_similar(s1->tempo, s2->tempo, 80, 200);
-	similarities += are_similar(s1->valence, s2->valence, 0.2, 1.0);
+	similarities += are_similar(s1->acousticness, s2->acousticness, 0.2);
+	similarities += are_similar(s1->danceability, s2->danceability, 0.2);
+	similarities += are_similar(s1->energy, s2->energy, 0.2);
+	similarities += are_similar(s1->instrumentalness, s2->instrumentalness, 0.2);
+	similarities += are_similar(s1->loudness, s2->loudness, 10);
+	similarities += are_similar(s1->speechiness, s2->speechiness, 0.2);
+	similarities += are_similar(s1->tempo, s2->tempo, 20);
+	similarities += are_similar(s1->valence, s2->valence, 0.2);
 	return (similarities);
 }
 

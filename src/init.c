@@ -57,6 +57,14 @@ t_user			*init_user(void)
 
 	if (!(user = (t_user *)malloc(sizeof(t_user))))
 		return (NULL);
+	user->acousticness = 0;
+	user->danceability = 0;
+	user->energy = 0;
+	user->instrumentalness = 0;
+	user->loudness = 0;
+	user->speechiness = 0;
+	user->tempo = 0;
+	user->valence = 0;	
 	return (user);
 }
 
@@ -117,6 +125,7 @@ t_options	*init_options(void)
 	opt->selected_node = -1;
 	opt->threshold = CONNECTION_THRESHOLD;
 	opt->offset = 0;
+	opt->stat_scale = 0;
 	return (opt);
 }
 

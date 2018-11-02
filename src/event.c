@@ -74,6 +74,7 @@ int		handle_keys(int key, t_rnd *rnd)
 			if (!(read_data(rnd)))
 				return (0); 
 			create_connections(rnd);
+			generate_user_stats(rnd);
 			rnd->menu->active = 0;
 		}
 	}
@@ -91,6 +92,9 @@ int		handle_keys(int key, t_rnd *rnd)
 				return (0);
 			free(rnd->menu);
 			if (!(rnd->menu = init_menu()))
+				return (0);
+			free(rnd->user);
+			if (!(rnd->user = init_user()))
 				return (0);
 		}
 	}	
