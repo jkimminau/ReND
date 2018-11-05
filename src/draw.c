@@ -26,6 +26,25 @@ void                    draw_line(t_rnd *rnd, double x1, double y1, double x2, d
         }
 }
 
+void					draw_rectangle(t_img *img, int x, int y, int wid, int len, int color)
+{
+	int 	i;
+	int		j;
+
+	i = y;
+	while (i < y + len)
+	{
+		j = x;
+		while (j < x + wid)
+		{
+			if (j == x || j == x + wid - 1 || i == y || i == y + len - 1)
+			img_pixel_put(img, j, i, color);
+			j++;
+		}
+		i++;
+	}
+}
+
 //Less efficient, but avoids any gaps, at least for 500 radius circle 
 void			draw_circle(t_img *img, int x, int y, double rad, int color)
 {
@@ -35,13 +54,15 @@ void			draw_circle(t_img *img, int x, int y, double rad, int color)
     int		dy;		
 	int		prev_x;
 	int		prev_y;
+	double	dt;
 
+	dt = 360 / (rad * 5);
 	i = 0;
 	degree = i * D2R;
 	prev_x = cos(degree) * rad;
 	prev_y = sin(degree) * rad;
 	img_pixel_put(img, prev_x + x, prev_y + y, color);
-	i += 0.01;
+	i += dt;
 	while (i < 360)
 	{
 		degree = i * D2R;
@@ -53,7 +74,7 @@ void			draw_circle(t_img *img, int x, int y, double rad, int color)
 			prev_x = x;
 			prev_y = y;
 		}
-		i += 0.01;
+		i += dt;
 	}
 }
 
@@ -78,7 +99,7 @@ void			connect_straight(t_rnd *rnd, t_connection *con)
 	}
 	else
 	{
-		color1 = brightness(con->s1->genre, ((double)con->strength - rnd->opt->threshold) / (FEATURES - rnd->opt->threshold) * 100);
+		color1 = brightness(con->s1->genre, ((double)con->strength - rnd->opt->threshold) / FEATURES * 100);
 		color2 = brightness(con->s2->genre, ((double)con->strength - rnd->opt->threshold) / (FEATURES - rnd->opt->threshold) * 100);
 	}
 	dc[0] = (color2 & 0xff) - (color1 & 0xff);
@@ -153,10 +174,10 @@ void		connect_bezier(t_rnd *rnd, t_connection *con)
 			sqrt(pow(con->s2->x - curve.x, 2) + pow(con->s2->y - curve.y, 2)) > rnd->opt->node_rad + 0.5 &&
 			 ((color & 0xff0000) >> 16) + ((color & 0x00ff00) >> 8) + (color & 0x0000ff) < c[0] + c[1] + c[2])
 		img_pixel_put(rnd->img, curve.x, curve.y, ((int)(c[2] * 65536) & 0xff0000) + ((int)(c[1] * 256) & 0xff00) + c[0]);
-		c[0] += (dc[0] * 0.001);
-		c[1] += (dc[1] * 0.001);
-		c[2] += (dc[2] * 0.001);
-		t += 0.001;
+		c[0] += (dc[0] * 0.002);
+		c[1] += (dc[1] * 0.002);
+		c[2] += (dc[2] * 0.002);
+		t += 0.002;
 	}
 }
 
@@ -168,42 +189,6 @@ void		draw_connection(t_rnd *rnd, t_connection *con, int offset)
 		connect_straight(rnd, con);
 	else
 		connect_bezier(rnd, con);
-}
-
-void		draw_node(t_rnd *rnd, int x, int y, t_song *song)
-{
-	int		color;
-	int		node_num;
-	double	i;
-	double	r;
-	double	degree;
-
-	song->x = x;
-	song->y = y;
-	node_num = (rnd->opt->selected_node == -1) ? rnd->opt->highlighted_node : rnd->opt->selected_node;
-	color = (node_num != -1 && rnd->opt->highlighted_node != song->num && rnd->opt->selected_node != song->num) ? brightness(song->genre, 50) : song->genre;
-	r = rnd->opt->node_rad;
-	i = 0;
-	while (i < 360)
-	{
-		degree = i * D2R;
-		img_pixel_put(rnd->img, (cos(degree) * r) + x, (sin(degree) * r) + y, color);
-		i++;
-	}
-}
-
-void		draw_node_map(t_rnd *rnd, int x, int y)
-{
-	int	i;
-	double	degree;
-
-	i = 0;
-	while (i < rnd->data->num_songs)
-	{
-		degree = get_angle_for_node(rnd, i) + rnd->opt->degree;
-		draw_node(rnd, (cos(degree * D2R) * rnd->opt->graph_rad) + x, (sin(degree * D2R) * rnd->opt->graph_rad) + y, rnd->data->songs[i]);
-		i++;
-	}
 }
 
 void			*draw_connections(void *arg)
@@ -236,154 +221,44 @@ void			*draw_connections(void *arg)
 	return (NULL);
 }
 
-void			draw_sidebar(t_rnd *rnd)
+void		draw_node(t_rnd *rnd, int x, int y, t_song *song)
 {
-	int		x;
-	int		y;
+	int		color;
+	int		node_num;
+	//double	i;
+	double	r;
+	//double	degree;
 
-	y = 0;
-	while (y < LEN)
-	{
-			x = WID - SIDEBAR_LEN;
-			while (x < WID)
-				img_pixel_put(rnd->img, x++, y, 0x373737);
-			y++;
-	}
+	song->x = x;
+	song->y = y;
+	node_num = (rnd->opt->selected_node == -1) ? rnd->opt->highlighted_node : rnd->opt->selected_node;
+	color = (node_num != -1 && rnd->opt->highlighted_node != song->num && rnd->opt->selected_node != song->num) ? brightness(song->genre, 50) : song->genre;
+	r = rnd->opt->node_rad;
+	draw_circle(rnd->img, x, y, r, color);
 }
 
-void		draw_stat(t_rnd *rnd, int x, int y, int len, double min, double max, double stat, int color)
+void			draw_node_map(t_rnd *rnd, int x, int y)
 {
-	int		i;
-	int		j;
-	int		wid;
+	int	i;
+	double	degree;
 
-	if (stat < min)
-		stat = min;
-	if (stat > max)
-		stat = max;
-	wid = STAT_WID * rnd->opt->stat_scale * (stat - min) / (max - min); 
 	i = 0;
-	while (i < len)
+	while (i < rnd->data->num_songs)
 	{
-		j = 0;
-		while (j < wid)
-		{
-			img_pixel_put(rnd->img, x + j, y + i, color);
-			j++;
-		}
+		degree = get_angle_for_node(rnd, i) + rnd->opt->degree;
+		draw_node(rnd, (cos(degree * D2R) * rnd->opt->graph_rad) + x, (sin(degree * D2R) * rnd->opt->graph_rad) + y, rnd->data->songs[i]);
 		i++;
 	}
-	if (rnd->opt->stat_scale < 1)
-		rnd->opt->stat_scale += 0.01;
 }
 
-void		draw_stats(t_rnd *rnd, t_song *s, int x, int y)
+void			draw_buttons(t_rnd *rnd)
 {
-	t_song	*s1;
-	t_song	*s2;
-	int		node_num;
-
-	node_num = (rnd->opt->selected_node == -1) ? rnd->opt->highlighted_node : rnd->opt->selected_node;
-	s1 = rnd->data->songs[node_num];
-	s2 = (rnd->opt->highlighted_node > -1 && rnd->opt->highlighted_node != node_num) ? rnd->data->songs[rnd->opt->highlighted_node] : 0;
-	if (s->num == s1->num)
-	{
-		draw_stat(rnd, x, y, 15, 0, 1, s->acousticness, (s2 != 0 && s2->acousticness > s->acousticness) ? 0xff0000 : 0x22ee00);
-		draw_stat(rnd, x, y + 25, 15, 0, 1, s->danceability, (s2 != 0 && s2->danceability > s->danceability) ? 0xff0000 : 0x22ee00);
-		draw_stat(rnd, x, y + 50, 15, 0, 1, s->energy, (s2 != 0 && s2->energy > s->energy) ? 0xff0000 : 0x22ee00);
-		draw_stat(rnd, x, y + 75, 15, 0, 1, s->instrumentalness, (s2 != 0 && s2->instrumentalness > s->instrumentalness) ? 0xff0000 : 0x22ee00);
-		draw_stat(rnd, x, y + 100, 15, -60, 0, s->loudness, (s2 != 0 && s2->loudness > s->loudness) ? 0xff0000 : 0x22ee00);
-		draw_stat(rnd, x, y + 125, 15, 0, 1, s->speechiness, (s2 != 0 && s2->speechiness > s->speechiness) ? 0xff0000 : 0x22ee00);
-		draw_stat(rnd, x, y + 150, 15, 60, 200, s->tempo, (s2 != 0 && s2->tempo > s->tempo) ? 0xff0000 : 0x22ee00);
-		draw_stat(rnd, x, y + 175, 15, 0, 1, s->valence, (s2 != 0 && s2->valence > s->valence) ? 0xff0000 : 0x22ee00);
-	}
-	else
-	{
-		draw_stat(rnd, x, y, 15, 0, 1, s->acousticness, (s->acousticness < s1->acousticness) ? 0xff0000 : 0x22ee00);
-		draw_stat(rnd, x, y + 25, 15, 0, 1, s->danceability, (s->danceability < s1->danceability) ? 0xff0000 : 0x22ee00);
-		draw_stat(rnd, x, y + 50, 15, 0, 1, s->energy, (s->energy < s1->energy) ? 0xff0000 : 0x22ee00);
-		draw_stat(rnd, x, y + 75, 15, 0, 1, s->instrumentalness, (s->instrumentalness < s->instrumentalness) ? 0xff0000 : 0x22ee00);
-		draw_stat(rnd, x, y + 100, 15, -60, 0, s->loudness, (s->loudness < s1->loudness) ? 0xff0000 : 0x22ee00);
-		draw_stat(rnd, x, y + 125, 15, 0, 1, s->speechiness, (s->speechiness < s1->speechiness) ? 0xff0000 : 0x22ee00);
-		draw_stat(rnd, x, y + 150, 15, 60, 200, s->tempo, (s->tempo < s1->tempo) ? 0xff0000 : 0x22ee00);
-		draw_stat(rnd, x, y + 175, 15, 0, 1, s->valence, (s->valence < s1->valence) ? 0xff0000 : 0x22ee00);
-	}
-	//print_song(s);
-}
-
-void			draw_song_template(t_rnd *rnd, int x, int y)
-{
-	mlx_string_put(rnd->mlx, rnd->win, x, y, 0x999999, "Song: ");
-	mlx_string_put(rnd->mlx, rnd->win, x, y + 50, 0x999999, "Album: ");
-	mlx_string_put(rnd->mlx, rnd->win, x, y + 100, 0x999999, "Artist: ");
-	mlx_string_put(rnd->mlx, rnd->win, x, y + 160, 0x999999, "A: ");
-	mlx_string_put(rnd->mlx, rnd->win, x, y + 185, 0x999999, "D: ");
-	mlx_string_put(rnd->mlx, rnd->win, x, y + 210, 0x999999, "E: ");
-	mlx_string_put(rnd->mlx, rnd->win, x, y + 235, 0x999999, "I: ");
-	mlx_string_put(rnd->mlx, rnd->win, x, y + 260, 0x999999, "L: ");
-	mlx_string_put(rnd->mlx, rnd->win, x, y + 285, 0x999999, "S: ");
-	mlx_string_put(rnd->mlx, rnd->win, x, y + 310, 0x999999, "T: ");
-	mlx_string_put(rnd->mlx, rnd->win, x, y + 335, 0x999999, "V: ");
-}
-
-void			draw_song_info(t_rnd *rnd, t_song *s, int x, int y)
-{
-	mlx_string_put(rnd->mlx, rnd->win, x, y, 0xffffff, s->title);
-	mlx_string_put(rnd->mlx, rnd->win, x, y + 50, 0xffffff, s->album);
-	mlx_string_put(rnd->mlx, rnd->win, x, y +100, 0xffffff, s->artist);
-	/*mlx_string_put(rnd->mlx, rnd->win, x + 10, y + 135, 0xffffff, ft_itoa((int)(s->acousticness * 100)));
-	mlx_string_put(rnd->mlx, rnd->win, x + 10, y + 160, 0xffffff, ft_itoa((int)(s->danceability * 100)));
-	mlx_string_put(rnd->mlx, rnd->win, x + 10, y + 185, 0xffffff, ft_itoa((int)(s->energy * 100)));
-	mlx_string_put(rnd->mlx, rnd->win, x + 10, y + 210, 0xffffff, ft_itoa((int)(s->instrumentalness * 100)));
-	mlx_string_put(rnd->mlx, rnd->win, x + 10, y + 235, 0xffffff, ft_itoa((int)(s->loudness)));
-	mlx_string_put(rnd->mlx, rnd->win, x + 10, y + 260, 0xffffff, ft_itoa((int)(s->speechiness * 100)));
-	mlx_string_put(rnd->mlx, rnd->win, x + 10, y + 285, 0xffffff, ft_itoa(s->tempo));
-	mlx_string_put(rnd->mlx, rnd->win, x + 10, y + 310, 0xffffff, ft_itoa((int)(s->valence * 100)));*/
-}
-
-void			draw_user_info(t_rnd *rnd, int x, int y)
-{
-	mlx_string_put(rnd->mlx, rnd->win, x, y, 0x999999, "Averages: ");
-	mlx_string_put(rnd->mlx, rnd->win, x, y + 20, 0x999999, "A: ");
-	mlx_string_put(rnd->mlx, rnd->win, x, y + 45, 0x999999, "D: ");
-	mlx_string_put(rnd->mlx, rnd->win, x, y + 70, 0x999999, "E: ");
-	mlx_string_put(rnd->mlx, rnd->win, x, y + 95, 0x999999, "I: ");
-	mlx_string_put(rnd->mlx, rnd->win, x, y + 120, 0x999999, "L: ");
-	mlx_string_put(rnd->mlx, rnd->win, x, y + 145, 0x999999, "S: ");
-	mlx_string_put(rnd->mlx, rnd->win, x, y + 170, 0x999999, "T: ");
-	mlx_string_put(rnd->mlx, rnd->win, x, y + 195, 0x999999, "V: ");
-	mlx_string_put(rnd->mlx, rnd->win, x + 20, y + 20, 0xffffff, ft_itoa((int)(rnd->user->acousticness * 100)));
-	mlx_string_put(rnd->mlx, rnd->win, x + 20, y + 45, 0xffffff, ft_itoa((int)(rnd->user->danceability * 100)));
-	mlx_string_put(rnd->mlx, rnd->win, x + 20, y + 70, 0xffffff, ft_itoa((int)(rnd->user->energy * 100)));
-	mlx_string_put(rnd->mlx, rnd->win, x + 20, y + 95, 0xffffff, ft_itoa((int)(rnd->user->instrumentalness * 100)));
-	mlx_string_put(rnd->mlx, rnd->win, x + 20, y + 120, 0xffffff, ft_itoa((int)(rnd->user->loudness)));
-	mlx_string_put(rnd->mlx, rnd->win, x + 20, y + 145, 0xffffff, ft_itoa((int)(rnd->user->speechiness * 100)));
-	mlx_string_put(rnd->mlx, rnd->win, x + 20, y + 170, 0xffffff, ft_itoa(rnd->user->tempo));
-	mlx_string_put(rnd->mlx, rnd->win, x + 20, y + 195, 0xffffff, ft_itoa((int)(rnd->user->valence * 100)));
-}
-
-void			draw_info(t_rnd *rnd)
-{
-	int		node_num;
-
-	node_num = (rnd->opt->selected_node == -1) ? rnd->opt->highlighted_node : rnd->opt->selected_node;
-	if (node_num == -1)
-		rnd->opt->stat_scale = 0;
-	else
-		draw_stats(rnd, rnd->data->songs[node_num], WID - SIDEBAR_LEN + 30, 185);
-	if (rnd->opt->highlighted_node > -1 && rnd->opt->highlighted_node != node_num)
-		draw_stats(rnd, rnd->data->songs[rnd->opt->highlighted_node], WID - SIDEBAR_LEN + 30, 565);
-	mlx_put_image_to_window(rnd->mlx, rnd->win, rnd->img->ptr, 0, 0);
-	mlx_string_put(rnd->mlx, rnd->win, WID - (SIDEBAR_LEN / 2) - 15, 5, 0xffffff, "ReND");
-	draw_song_template(rnd, WID - SIDEBAR_LEN + 10, 20);
-	if (node_num > -1)
-		draw_song_info(rnd, rnd->data->songs[node_num], WID - SIDEBAR_LEN + 25, 45);
-	if (rnd->opt->highlighted_node > -1 && rnd->opt->highlighted_node != node_num)
-	{
-		draw_song_template(rnd, WID - SIDEBAR_LEN + 10, 400);
-		draw_song_info(rnd, rnd->data->songs[rnd->opt->highlighted_node], WID - SIDEBAR_LEN + 25, 425);
-	}
-	draw_user_info(rnd, 0, 0);
+	draw_circle(rnd->img, rnd->btn->grad_up.x, rnd->btn->grad_up.y, BUTTON_RAD, 0xbbbbbb);
+	draw_circle(rnd->img, rnd->btn->grad_down.x, rnd->btn->grad_down.y, BUTTON_RAD, 0xbbbbbb);
+	draw_circle(rnd->img, rnd->btn->nrad_up.x, rnd->btn->nrad_up.y, BUTTON_RAD, 0xbbbbbb);
+	draw_circle(rnd->img, rnd->btn->nrad_down.x, rnd->btn->nrad_down.y, BUTTON_RAD, 0xbbbbbb);
+	draw_circle(rnd->img, rnd->btn->thresh_up.x, rnd->btn->thresh_up.y, BUTTON_RAD, 0xbbbbbb);
+	draw_circle(rnd->img, rnd->btn->thresh_down.x, rnd->btn->thresh_down.y, BUTTON_RAD, 0xbbbbbb);
 }
 
 void			check_mouse(t_rnd *rnd)
@@ -392,26 +267,35 @@ void			check_mouse(t_rnd *rnd)
 	double	degree;
 	double	x;
 	double	y;
+	int		highlight;
 
-	rnd->opt->highlighted_node = -1;
+	highlight = -1;
 	i = 0;
 	while (i < rnd->data->num_songs)
 	{
 		degree = get_angle_for_node(rnd, i) + rnd->opt->degree;
 		x = (cos(degree * D2R) * rnd->opt->graph_rad) + MIDX;
 		y = (sin(degree * D2R) * rnd->opt->graph_rad) + MIDY;
-		if (sqrt(pow((x - rnd->opt->mouse_x), 2) + pow((y - rnd->opt->mouse_y), 2)) < rnd->opt->node_rad + 1)
-			rnd->opt->highlighted_node = i;
+		if (sqrt(pow((x - rnd->opt->mouse.x), 2) + pow((y - rnd->opt->mouse.y), 2)) < rnd->opt->node_rad + 1)
+			highlight = i;
 		i++;
 	}
-	if (rnd->opt->selected_node != -1 && sqrt(pow((rnd->opt->mouse_x - MIDX), 2) + pow((rnd->opt->mouse_y - MIDY), 2)) < rnd->opt->graph_rad + 1)
+	if (rnd->opt->selected_node != -1 && sqrt(pow((rnd->opt->mouse.x - MIDX), 2) + pow((rnd->opt->mouse.y - MIDY), 2)) < rnd->opt->graph_rad + 1)
 	{
 		degree = rnd->opt->mouse_degree - rnd->opt->degree;
 		degree += (degree < 0) ? 360 : 0;
-		rnd->opt->highlighted_node = (degree / 360 * rnd->data->num_songs) + 0.5;
-		if (rnd->opt->highlighted_node == rnd->data->num_songs)
-			rnd->opt->highlighted_node = 0;
+		highlight = (degree / 360 * rnd->data->num_songs) + 0.5;
+		if (highlight == rnd->data->num_songs)
+			highlight = 0;
 	}
+	i = 0;
+	while (i < rnd->data->num_songs)
+	{
+		if (rnd->data->songs[i]->num != rnd->opt->selected_node && rnd->data->songs[i]->num != highlight)
+			rnd->data->songs[i]->stat_scale = 0;
+		i++;
+	}
+	rnd->opt->highlighted_node = highlight;
 }
 
 void			render(t_rnd *rnd)
@@ -422,8 +306,8 @@ void			render(t_rnd *rnd)
 	free(rnd->img);
 	rnd->img = init_img(rnd->mlx);
 	check_mouse(rnd);
-	draw_sidebar(rnd);
 	draw_node_map(rnd, MIDX, MIDY);
+	draw_sidebar(rnd);
 	i = 0;
 	while (i < 8)
 	{
@@ -436,22 +320,5 @@ void			render(t_rnd *rnd)
 	while (i < 8)
 		pthread_join(list[i++].thread_id, NULL);
 	mlx_put_image_to_window(rnd->mlx, rnd->win, rnd->img->ptr, 0, 0);
-	draw_info(rnd);
-}
-
-void			render_menu(t_rnd *rnd)
-{
-	rnd->img = init_img(rnd->mlx);
-	draw_node_map(rnd, WID / 2, LEN / 2);
-	mlx_put_image_to_window(rnd->mlx, rnd->win, rnd->img->ptr, 0, 0);
-	if (rnd->menu->start_pressed)
-	{
-		mlx_string_put(rnd->mlx, rnd->win, WID / 2 - 15, (LEN / 2) - 80, 0xffffff, "ReND");
-		mlx_string_put(rnd->mlx, rnd->win, WID / 2 - 200, (LEN / 2) - 50, 0x999999, "Select options and push [Space] to continue");
-		mlx_string_put(rnd->mlx, rnd->win, WID / 2 - 70, (LEN / 2) - 20, (rnd->menu->recently_played) ? 0x00ff00 : 0xff0000, "1) Recently Played");
-		mlx_string_put(rnd->mlx, rnd->win, WID / 2 - 70, (LEN / 2), (rnd->menu->discover_weekly) ? 0x00ff00 : 0xff0000, "2) Discover Weekly");
-		mlx_string_put(rnd->mlx, rnd->win, WID / 2 - 70, (LEN / 2) + 20, 0xff0000, "3) Add Album");
-	}
-	else
-		mlx_string_put(rnd->mlx, rnd->win, WID / 2 - 15, LEN / 2, brightness(0xffffff, fabs(rnd->opt->brightness)), "ReND");
+	draw_text(rnd);
 }

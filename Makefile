@@ -10,6 +10,8 @@ OBJ_D = object_files/
 
 SRC_C =	rnd.c		\
 		draw.c		\
+		menu.c		\
+		sidebar.c	\
 		connect.c	\
 		data.c		\
 		event.c		\

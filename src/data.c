@@ -126,7 +126,7 @@ int		read_data(t_rnd *rnd)
 	return (1);
 }
 
-t_data	*init_menu_data(void)
+t_data	*menu_data(void)
 {
 	int		i;
 	t_data	*menu;

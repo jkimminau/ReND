@@ -27,22 +27,28 @@
 
 int		mouse_move(int x, int y, t_rnd *rnd)
 {
-	rnd->opt->mouse_x = x;
-	rnd->opt->mouse_y = y;
+	rnd->opt->mouse.x = x;
+	rnd->opt->mouse.y = y;
 	rnd->opt->mouse_degree = get_mouse_degree(rnd, x, y);
 	return (0);
 }
 
 int		mouse_click(int button, int x, int y, t_rnd *rnd)
 {
-	(void)x;
-	(void)y;
 	if (button == 1)
 	{
 		if (rnd->menu->active)
 			rnd->menu->start_pressed = 1;
 		else
-			rnd->opt->selected_node = rnd->opt->highlighted_node;
+		{
+			if (x < WID - SIDEBAR_LEN)
+			{
+				if (rnd->opt->selected_node != -1 && rnd->opt->highlighted_node != -1 && rnd->opt->selected_node != rnd->opt->highlighted_node)
+					rnd->data->songs[rnd->opt->highlighted_node]->stat_scale = 0;
+				rnd->opt->selected_node = rnd->opt->highlighted_node;
+			}
+			rnd->opt->sidebar_mode = check_buttons(rnd, x, y);
+		}
 	}
 	return (0);
 }
@@ -64,10 +70,8 @@ int		handle_keys(int key, t_rnd *rnd)
 	{
 		if (key == KEY_BACK)
 			rnd->menu->start_pressed = 0;
-		if (key == KEY_1)
-			rnd->menu->recently_played = !rnd->menu->recently_played;
-		if (key == KEY_2)
-			rnd->menu->discover_weekly = !rnd->menu->discover_weekly;
+		/*if (key == KEY_1)
+			rnd->menu->recently_played = !rnd->menu->recently_played;*/
 		if (key == KEY_SPACE && rnd->menu->start_pressed)
 		{
 			free(rnd->data);
@@ -88,7 +92,7 @@ int		handle_keys(int key, t_rnd *rnd)
 			free(rnd->data);
 			rnd->opt->highlighted_node = -1;
 			rnd->opt->selected_node = -1;
-			if (!(rnd->data = init_menu_data()))
+			if (!(rnd->data = menu_data()))
 				return (0);
 			free(rnd->menu);
 			if (!(rnd->menu = init_menu()))

@@ -29,13 +29,12 @@ void		free_all(t_rnd *rnd)
 	free(rnd);
 }
 
-t_point		new_point(int x, int y, int z)
+t_point		new_point(int x, int y)
 {
 	t_point		point;
 
 	point.x = x;
 	point.y = y;
-	point.z = z;
 	return (point);
 }
 
@@ -48,6 +47,7 @@ t_song		*init_song(void)
 	song->title = 0;
 	song->album = 0;
 	song->artist = 0;
+	song->stat_scale = 0;
 	return (song);
 }
 
@@ -64,7 +64,8 @@ t_user			*init_user(void)
 	user->loudness = 0;
 	user->speechiness = 0;
 	user->tempo = 0;
-	user->valence = 0;	
+	user->valence = 0;
+	user->stat_scale = 0;
 	return (user);
 }
 
@@ -118,15 +119,43 @@ t_options	*init_options(void)
 	opt->brightness = 100;
 	opt->graph_rad = GRAPH_RAD;
 	opt->node_rad = NODE_RAD;
-	opt->mouse_x = 0;
-	opt->mouse_y = 0;
 	opt->mouse_degree = 0;
 	opt->highlighted_node = -1;
 	opt->selected_node = -1;
 	opt->threshold = CONNECTION_THRESHOLD;
 	opt->offset = 0;
-	opt->stat_scale = 0;
+	opt->sidebar_mode = 1;
+	opt->mouse.x = 0;
+	opt->mouse.y = 0;
 	return (opt);
+}
+
+t_buttons	*init_buttons(void)
+{
+	t_buttons *b;
+
+	if (!(b = (t_buttons *)malloc(sizeof(t_buttons))))
+		return (0);
+	//draw_rectangle(rnd->img, (WID - SIDEBAR_LEN) + (i * SIDEBAR_LEN / 3) + (SIDEBAR_LEN / 12), 5, SIDEBAR_LEN / 6, 20, 0x999999);
+	b->settings.x = (WID - SIDEBAR_LEN) + (SIDEBAR_LEN / 3) - (SIDEBAR_LEN / 4.5);
+	b->settings.y = 5;
+	b->songs.x = (WID - SIDEBAR_LEN) + (SIDEBAR_LEN / 3) + (SIDEBAR_LEN / 12);
+	b->songs.y = 5;
+	b->user.x = (WID - SIDEBAR_LEN) + (SIDEBAR_LEN * 2 / 3) + (SIDEBAR_LEN / 12);
+	b->user.y = 5;
+	b->grad_up.x = WID - SIDEBAR_LEN + 30;
+	b->grad_up.y = 120;
+	b->grad_down.x = WID - SIDEBAR_LEN + 30;
+	b->grad_down.y = 140;
+	b->nrad_up.x = WID - SIDEBAR_LEN + 30;
+	b->nrad_up.y = 180;
+	b->nrad_down.x = WID - SIDEBAR_LEN + 30;
+	b->nrad_down.y = 200;
+	b->thresh_up.x = WID - SIDEBAR_LEN + 30;
+	b->thresh_up.y = 240;
+	b->thresh_down.x = WID - SIDEBAR_LEN + 30;
+	b->thresh_down.y = 260;
+	return (b);
 }
 
 t_menu		*init_menu(void)
@@ -156,11 +185,13 @@ t_rnd		*init_rnd(int ac, char **av)
 		return (0);
 	if (!(rnd->opt = init_options()))
 		return (0);
+	if (!(rnd->btn = init_buttons()))
+		return (0);
 	if (!(rnd->user = init_user()))
 		return (0);
 	if (!(rnd->menu = init_menu()))
 		return (0);
-	if (!(rnd->data = init_menu_data()))
+	if (!(rnd->data = menu_data()))
 		return (0);
 	read_params(rnd, ac, av);
 	return (rnd);

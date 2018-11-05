@@ -3,7 +3,7 @@
 int		loop_events(t_rnd *rnd)
 {
 	if (rnd->opt->autorotate && rnd->opt->highlighted_node == -1 && rnd->opt->selected_node == -1)
-		rnd->opt->degree += (rnd->menu->active) ? 0.02 : 0.1;
+		rnd->opt->degree += (rnd->menu->active) ? 0.1 : 0.1;
 	if ((int)rnd->opt->degree > 359)
 		rnd->opt->degree = 0;
 		rnd->opt->brightness -= 0.1;
