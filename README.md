@@ -11,6 +11,6 @@ I wanted to create something that would
   
     B) Challenge my ability with a limited graphics library
   
-    C) Make something that looks visually appealing
+    C) Look visually appealing
   
 While I'm proud of what I have so far in this limited project, I want to expand on this later. If you want to use any of this code, or have any questions, go ahead!
