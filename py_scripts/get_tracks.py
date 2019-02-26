@@ -7,8 +7,8 @@ import wikipedia
 # CLEAN JSON PRINT
 #print(json.dumps(JSON, sort_keys=True, indent=4, separators=(',', ': ')))
 
-#user_id ='1225066737'
-user_id ='maksym.moros'
+user_id ='1225066737'
+#user_id =''
 scope = 'user-top-read user-read-recently-played' 
 token = util.prompt_for_user_token(user_id, scope, redirect_uri='https://example.com/callback')
 sp = spotipy.Spotify(auth=token)
